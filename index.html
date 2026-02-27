@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Excusas - I.E. Divino Niño</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="instructions no-print">
-        <p><strong>Nota:</strong> Por favor, complete los espacios en blanco con los datos del estudiante y el motivo de la inasistencia. Puede firmar en el recuadro inferior antes de imprimir o guardar.</p>
+        <p><strong>Nota:</strong> Llene los datos y use el botón verde para enviar por WhatsApp o el azul para imprimir/guardar PDF.</p>
     </div>
 
     <div class="container main-border">
@@ -29,9 +30,9 @@
 
         <form id="excuse-form">
             <div class="recipient">
-                <p>Señor:</p>
-                <input type="text" placeholder="Nombre del Coordinador/Docente" class="full-input" required>
-                <p>Coordinador y/o docente</p>
+                <p>Señor (a):</p>
+                <input type="text" id="docente" placeholder="Nombre de la Directora" class="full-input">
+                <p>Directora de Grupo 8A</p>
                 <p>Institución Educativa DIVINO NIÑO</p>
                 <label>SEDE: </label><strong>SAN JOSÉ</strong>
             </div>
@@ -40,30 +41,38 @@
 
             <div class="body-text">
                 Por medio de la presente, solicito excusar a mi hijo (a) 
-                <input type="text" value="Isaac" class="inline-input" required>, 
-                identificado con T.I <input type="text" class="inline-input" required> 
-                estudiante del grupo <input type="text" value="8A" class="inline-input" required> 
+                <input type="text" id="estudiante" value="Isaac" class="inline-input" required>, 
+                identificado con T.I <input type="text" id="ti" class="inline-input" required> 
+                estudiante del grupo <input type="text" id="grupo" value="8A" class="inline-input" required> 
                 por la inasistencia a las clases durante los días 
-                <input type="text" placeholder="Ej: 26 y 27 de febrero" class="inline-input" required>.
+                <input type="text" id="dias" placeholder="Ej: 26 y 27 de febrero" class="inline-input" required>.
                 Su ausencia se debe a:
-                <textarea rows="3" class="full-textarea" placeholder="Escriba aquí el motivo..." required></textarea>
+                <textarea id="motivo" rows="3" class="full-textarea" placeholder="Escriba aquí el motivo..." required></textarea>
             </div>
 
             <div class="signature-container">
                 <div class="signature-box">
-                    <input type="text" placeholder="Nombre del Padre/Acudiente" class="parent-name-input">
+                    <input type="text" id="acudiente" placeholder="Nombre del Padre/Acudiente" class="parent-name-input">
                     <canvas id="signature-pad" width="300" height="100"></canvas>
                     <hr>
                     <p>Firma del Padre de familia y/o acudiente</p>
                     <div class="id-phone">
-                        <label>CC.</label> <input type="text" class="short-input" required>
-                        <label>Tel:</label> <input type="tel" class="short-input" required>
+                        <label>CC.</label> <input type="text" id="cc" class="short-input">
+                        <label>Tel:</label> <input type="tel" id="tel" class="short-input">
                     </div>
                 </div>
                 <button type="button" onclick="clearSignature()" class="no-print btn-clear">Limpiar Firma</button>
             </div>
 
-            <button type="button" onclick="window.print()" class="no-print btn-print">Imprimir / Guardar PDF</button>
+            <div class="button-group no-print">
+                <button type="button" onclick="window.print()" class="btn-print">
+                    <i class="fas fa-print"></i> Imprimir / PDF
+                </button>
+                
+                <button type="button" onclick="enviarWhatsApp()" class="btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Enviar a Directora 8A
+                </button>
+            </div>
         </form>
     </div>
 
@@ -73,7 +82,7 @@
         const now = new Date();
         document.getElementById('current-date').textContent = now.toLocaleDateString('es-CO', options);
 
-        // Lógica de Firma Digital
+        // Lógica de Firma
         const canvas = document.getElementById('signature-pad');
         const ctx = canvas.getContext('2d');
         let drawing = false;
@@ -81,36 +90,44 @@
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             return {
-                x: (e.clientX || e.touches[0].clientX) - rect.left,
-                y: (e.clientY || e.touches[0].clientY) - rect.top
+                x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left,
+                y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
             };
         }
-
         function start(e) { drawing = true; draw(e); }
         function end() { drawing = false; ctx.beginPath(); }
-        
         function draw(e) {
             if (!drawing) return;
             e.preventDefault();
             const pos = getPos(e);
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#000';
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+            ctx.lineTo(pos.x, pos.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
         }
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', end); canvas.addEventListener('touchstart', start);
+        canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', end);
+        function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', end);
-        canvas.addEventListener('touchstart', start);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', end);
+        // Función de Envío WhatsApp
+        function enviarWhatsApp() {
+            const docente = document.getElementById('docente').value;
+            const estudiante = document.getElementById('estudiante').value;
+            const grupo = document.getElementById('grupo').value;
+            const dias = document.getElementById('dias').value;
+            const motivo = document.getElementById('motivo').value;
+            const acudiente = document.getElementById('acudiente').value;
+            const fecha = document.getElementById('current-date').textContent;
 
-        function clearSignature() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const mensaje = `*EXCUSA ESCOLAR - I.E. DIVINO NIÑO*%0A` +
+                            `*Fecha:* ${fecha}%0A` +
+                            `*Para:* ${docente || 'Directora'}%0A%0A` +
+                            `Cordial saludo. Por medio de la presente solicito excusar a mi hijo(a) *${estudiante}* del grupo *${grupo}*, por la inasistencia los días *${dias}*.%0A%0A` +
+                            `*Motivo:* ${motivo}%0A%0A` +
+                            `Atentamente,%0A*${acudiente}*`;
+
+            const url = `https://wa.me/573145819365?text=${mensaje}`;
+            window.open(url, '_blank');
         }
     </script>
 </body>
