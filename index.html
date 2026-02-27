@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        /* CSS INTEGRADO PARA EVITAR ERRORES DE CARGA */
         body {
             font-family: 'Arial', sans-serif;
             display: flex;
@@ -29,22 +28,19 @@
             border: 1px solid #ffeeba;
         }
 
-        /* Contenedor tamaño Carta (Letter) */
+        /* AJUSTE PARA UNA SOLA HOJA */
         .container {
             background: white;
             width: 750px;
-            height: 1050px; /* Altura máxima para asegurar una sola hoja */
+            height: 980px; /* Reducido ligeramente para margen de seguridad */
             padding: 30px 50px;
             box-sizing: border-box;
             position: relative;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        .main-border {
-            border: 4px double #0056b3;
-        }
+        .main-border { border: 4px double #0056b3; }
 
-        /* Encabezado Compacto */
         .compact-header {
             display: flex;
             align-items: center;
@@ -55,11 +51,7 @@
             margin-bottom: 15px;
         }
 
-        .logo-small {
-            width: 80px;
-            height: auto;
-        }
-
+        .logo-small { width: 80px; height: auto; }
         .header-text { text-align: center; }
         .header-text h1 { font-size: 1.2rem; margin: 0; color: #0056b3; }
         .header-text h2 { font-size: 1rem; margin: 2px 0; color: #333; }
@@ -67,7 +59,6 @@
         .res { font-size: 0.7rem; color: #888; }
 
         .date-section { text-align: right; margin-bottom: 20px; font-size: 0.95rem; }
-
         .recipient { line-height: 1.4; margin-bottom: 20px; }
         .recipient p { margin: 2px 0; }
 
@@ -88,10 +79,9 @@
             text-align: justify;
         }
 
-        /* Cuadro de motivo dinámico */
         .editable-motivo {
             width: 100%;
-            min-height: 80px;
+            min-height: 60px;
             border: 1px solid #f0f0f0;
             padding: 10px;
             margin-top: 10px;
@@ -101,18 +91,13 @@
             outline: none;
         }
 
-        /* Sección de Firma */
         .signature-section {
-            margin-top: 40px;
+            margin-top: 30px;
             display: flex;
             justify-content: center;
         }
 
-        .signature-box {
-            width: 380px;
-            text-align: center;
-        }
-
+        .signature-box { width: 380px; text-align: center; }
         .parent-name-input {
             width: 100%;
             text-align: center;
@@ -125,15 +110,13 @@
             background: #fafafa;
             border: 1px solid #eee;
             cursor: crosshair;
-            touch-action: none; /* Importante para móviles */
+            touch-action: none;
         }
 
         .sig-line { border: 0; border-top: 1px solid #000; margin: 5px 0; }
-
         .id-phone { font-size: 0.95rem; margin-top: 5px; }
         .short-input { width: 110px; text-align: center; }
 
-        /* Botones */
         .button-group {
             display: flex;
             gap: 10px;
@@ -156,21 +139,20 @@
         .btn-whatsapp { background: #25D366; }
         .btn-print { background: #0056b3; }
         .btn-clear { background: #6c757d; }
-        
         button:hover { opacity: 0.9; }
 
         @media print {
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
-            .container { box-shadow: none; border: 1px solid #000; }
+            .container { box-shadow: none; border: 1px solid #000; height: 100%; }
         }
     </style>
 </head>
 <body>
 
     <div class="instructions no-print">
-        <i class="fas fa-info-circle"></i> 
-        <strong>Instrucciones:</strong> Complete los campos en gris. El cuadro de motivo se ajusta solo. Al finalizar, firme y use el botón de WhatsApp para generar el PDF.
+        <i class="fas fa-save"></i> 
+        <strong>Auto-guardado activo:</strong> Los nombres y documentos se guardarán para la próxima vez.
     </div>
 
     <div id="printable-area" class="container main-border">
@@ -190,7 +172,7 @@
 
         <form id="excuse-form">
             <div class="recipient">
-                <p>Señor (a): <input type="text" id="docente" placeholder="Nombre de la Directora" class="full-input"></p>
+                <p>Señor (a): <input type="text" id="docente" placeholder="Nombre de la Directora" class="full-input" oninput="saveData()"></p>
                 <p>Directora de Grupo 8A</p>
                 <p>Institución Educativa DIVINO NIÑO</p>
                 <p>SEDE: <strong>SAN JOSÉ</strong></p>
@@ -200,25 +182,25 @@
 
             <div class="body-text">
                 Por medio de la presente, solicito excusar a mi hijo (a) 
-                <input type="text" id="estudiante" value="Isaac Marin Gonzalez" class="inline-input" style="width: 260px;">, 
-                identificado con T.I <input type="text" id="ti" value="1038127003" class="inline-input" style="width: 120px;"> 
-                estudiante del grupo <input type="text" id="grupo" value="8A" class="inline-input" style="width: 40px;"> 
+                <input type="text" id="estudiante" class="inline-input" style="width: 260px;" oninput="saveData()">, 
+                identificado con T.I <input type="text" id="ti" class="inline-input" style="width: 120px;" oninput="saveData()"> 
+                estudiante del grupo <input type="text" id="grupo" class="inline-input" style="width: 40px;" oninput="saveData()"> 
                 por la inasistencia a las clases durante los días 
-                <input type="text" id="dias" placeholder="Ej: 27 de febrero" class="inline-input" style="width: 180px;">.
+                <input type="text" id="dias" placeholder="Escriba los días" class="inline-input" style="width: 180px;">.
                 <br><br>
                 Su ausencia se debe a:
-                <div id="motivo" class="editable-motivo" contenteditable="true">Indispuesto por el virus</div>
+                <div id="motivo" class="editable-motivo" contenteditable="true">Escriba el motivo aquí...</div>
             </div>
 
             <div class="signature-section">
                 <div class="signature-box">
-                    <input type="text" id="acudiente" value="Harold Marin Machado" class="parent-name-input">
+                    <input type="text" id="acudiente" class="parent-name-input" oninput="saveData()">
                     <canvas id="signature-pad" width="380" height="100"></canvas>
                     <hr class="sig-line">
                     <p>Firma del Padre de familia y/o acudiente</p>
                     <div class="id-phone">
-                        CC. <input type="text" id="cc" value="4712484" class="short-input"> 
-                        &nbsp;&nbsp; Tel: <input type="tel" id="tel" value="3117700431" class="short-input">
+                        CC. <input type="text" id="cc" class="short-input" oninput="saveData()"> 
+                        &nbsp;&nbsp; Tel: <input type="tel" id="tel" class="short-input" oninput="saveData()">
                     </div>
                 </div>
             </div>
@@ -226,23 +208,54 @@
     </div>
 
     <div class="button-group no-print">
-        <button type="button" onclick="window.print()" class="btn-print">
-            <i class="fas fa-print"></i> Imprimir / Guardar
-        </button>
-        <button type="button" onclick="clearSignature()" class="btn-clear">
-            <i class="fas fa-eraser"></i> Limpiar Firma
-        </button>
-        <button type="button" onclick="generarYEnviar()" class="btn-whatsapp">
-            <i class="fab fa-whatsapp"></i> Generar PDF y Enviar
-        </button>
+        <button type="button" onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Imprimir</button>
+        <button type="button" onclick="clearSignature()" class="btn-clear"><i class="fas fa-eraser"></i> Borrar Firma</button>
+        <button type="button" onclick="generarYEnviar()" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> Generar y Enviar</button>
     </div>
 
     <script>
-        // 1. Fecha Automática Colombia
+        // 1. Fecha Automática
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CO', options);
 
-        // 2. Lógica de la Firma (Mouse y Táctil)
+        // 2. Persistencia de Datos (LocalStorage)
+        function saveData() {
+            const data = {
+                docente: document.getElementById('docente').value,
+                estudiante: document.getElementById('estudiante').value,
+                ti: document.getElementById('ti').value,
+                grupo: document.getElementById('grupo').value,
+                acudiente: document.getElementById('acudiente').value,
+                cc: document.getElementById('cc').value,
+                tel: document.getElementById('tel').value
+            };
+            localStorage.setItem('excusa_data', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('excusa_data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('docente').value = data.docente || "";
+                document.getElementById('estudiante').value = data.estudiante || "Isaac Marin Gonzalez";
+                document.getElementById('ti').value = data.ti || "1038127003";
+                document.getElementById('grupo').value = data.grupo || "8A";
+                document.getElementById('acudiente').value = data.acudiente || "Harold Marin Machado";
+                document.getElementById('cc').value = data.cc || "4712484";
+                document.getElementById('tel').value = data.tel || "3117700431";
+            } else {
+                // Valores por defecto si no hay nada guardado
+                document.getElementById('estudiante').value = "Isaac Marin Gonzalez";
+                document.getElementById('ti').value = "1038127003";
+                document.getElementById('grupo').value = "8A";
+                document.getElementById('acudiente').value = "Harold Marin Machado";
+                document.getElementById('cc').value = "4712484";
+                document.getElementById('tel').value = "3117700431";
+            }
+        }
+        window.onload = loadData;
+
+        // 3. Firma
         const canvas = document.getElementById('signature-pad');
         const ctx = canvas.getContext('2d');
         let drawing = false;
@@ -253,56 +266,36 @@
             const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
-
         function start(e) { drawing = true; draw(e); }
         function end() { drawing = false; ctx.beginPath(); }
         function draw(e) {
             if (!drawing) return;
             e.preventDefault();
             const pos = getPos(e);
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#000';
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+            ctx.lineTo(pos.x, pos.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
         }
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', end); canvas.addEventListener('touchstart', start);
+        canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', end);
+        function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', end);
-        canvas.addEventListener('touchstart', start);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', end);
-
-        function clearSignature() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // 3. Generación de PDF y Enlace a WhatsApp
+        // 4. Generar y Enviar
         function generarYEnviar() {
             const element = document.getElementById('printable-area');
             const nombreEstudiante = document.getElementById('estudiante').value || "Isaac";
-            
             const opt = {
-                margin: 0.4,
+                margin: 0.3,
                 filename: `Excusa_${nombreEstudiante}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, scrollY: 0, useCORS: true },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            // Generar y descargar PDF
             html2pdf().set(opt).from(element).save().then(() => {
-                // Mensaje para WhatsApp
-                const mensaje = `*EXCUSA ESCOLAR FORMAL*%0AAdjunto envío la excusa en formato PDF de *${nombreEstudiante}* (Grado 8A). Por favor revisar el archivo descargado.`;
-                const url = `https://wa.me/573145819365?text=${mensaje}`;
-                
-                // Abrir WhatsApp después de un breve delay
-                setTimeout(() => {
-                    window.open(url, '_blank');
-                }, 1000);
+                const mensaje = `*EXCUSA ESCOLAR FORMAL*%0AAdjunto envío la excusa en PDF de *${nombreEstudiante}* (8A).`;
+                window.open(`https://wa.me/573145819365?text=${mensaje}`, '_blank');
             });
         }
     </script>
