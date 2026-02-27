@@ -7,12 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="instructions no-print">
+        <p><strong>Nota:</strong> Por favor, complete los espacios en blanco con los datos del estudiante y el motivo de la inasistencia. Puede firmar en el recuadro inferior antes de imprimir o guardar.</p>
+    </div>
+
+    <div class="container main-border">
         <header>
+            <img src="divino.PNG" alt="Logo I.E. Divino Niño" class="logo">
             <h1>INSTITUCIÓN EDUCATIVA DIVINO NIÑO</h1>
-            <p>"Fe, Esperanza y Amor"</p>
-            <small>Resolución 18922 de 18-12-2002</small><br>
-            <small>Res. 9430 de 23-11-2004, Res. 0018634 de 12-08-2009</small>
+            <h2 class="sede-title">SEDE SAN JOSÉ</h2>
+            <p class="motto">"Fe, Esperanza y Amor"</p>
+            <div class="resolutions">
+                <small>Resolución 18922 de 18-12-2002</small><br>
+                <small>Res. 9430 de 23-11-2004, Res. 0018634 de 12-08-2009</small>
+            </div>
         </header>
 
         <section class="date-section">
@@ -22,43 +30,88 @@
         <form id="excuse-form">
             <div class="recipient">
                 <p>Señor:</p>
-                <input type="text" placeholder="Nombre del Coordinador/Docente" required>
+                <input type="text" placeholder="Nombre del Coordinador/Docente" class="full-input" required>
                 <p>Coordinador y/o docente</p>
                 <p>Institución Educativa DIVINO NIÑO</p>
-                <label>SEDE: </label><input type="text" required>
+                <label>SEDE: </label><strong>SAN JOSÉ</strong>
             </div>
 
             <p class="greeting">Cordial saludo.</p>
 
             <div class="body-text">
                 Por medio de la presente, solicito excusar a mi hijo (a) 
-                <input type="text" value="Isaac" required>, 
-                identificado con T.I <input type="text" required> 
-                estudiante del grupo <input type="text" value="8A" required> 
+                <input type="text" value="Isaac" class="inline-input" required>, 
+                identificado con T.I <input type="text" class="inline-input" required> 
+                estudiante del grupo <input type="text" value="8A" class="inline-input" required> 
                 por la inasistencia a las clases durante los días 
-                <input type="text" placeholder="Ej: 26 y 27 de febrero" required>.
+                <input type="text" placeholder="Ej: 26 y 27 de febrero" class="inline-input" required>.
                 Su ausencia se debe a:
-                <textarea rows="3" required></textarea>
+                <textarea rows="3" class="full-textarea" placeholder="Escriba aquí el motivo..." required></textarea>
             </div>
 
-            <div class="signature-section">
-                <hr>
-                <p>Padre de familia y/o acudiente</p>
-                <label>CC.</label> <input type="text" required><br>
-                <label>Teléfono:</label> <input type="tel" required>
+            <div class="signature-container">
+                <div class="signature-box">
+                    <input type="text" placeholder="Nombre del Padre/Acudiente" class="parent-name-input">
+                    <canvas id="signature-pad" width="300" height="100"></canvas>
+                    <hr>
+                    <p>Firma del Padre de familia y/o acudiente</p>
+                    <div class="id-phone">
+                        <label>CC.</label> <input type="text" class="short-input" required>
+                        <label>Tel:</label> <input type="tel" class="short-input" required>
+                    </div>
+                </div>
+                <button type="button" onclick="clearSignature()" class="no-print btn-clear">Limpiar Firma</button>
             </div>
 
-            <button type="button" onclick="window.print()" class="no-print">Imprimir / Guardar PDF</button>
+            <button type="button" onclick="window.print()" class="no-print btn-print">Imprimir / Guardar PDF</button>
         </form>
     </div>
 
     <script>
-        // Configuración de fecha real para Colombia
+        // Fecha Real Colombia
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const now = new Date();
-        // Forzamos la zona horaria de Colombia
-        const colombiaDate = now.toLocaleDateString('es-CO', options);
-        document.getElementById('current-date').textContent = colombiaDate;
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-CO', options);
+
+        // Lógica de Firma Digital
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches[0].clientX) - rect.left,
+                y: (e.clientY || e.touches[0].clientY) - rect.top
+            };
+        }
+
+        function start(e) { drawing = true; draw(e); }
+        function end() { drawing = false; ctx.beginPath(); }
+        
+        function draw(e) {
+            if (!drawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', end);
+        canvas.addEventListener('touchstart', start);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', end);
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
     </script>
 </body>
 </html>
