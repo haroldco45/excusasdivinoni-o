@@ -6,13 +6,14 @@
     <title>Generador de Excusas - I.E. Divino Niño</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="instructions no-print">
-        <p><strong>Nota:</strong> Llene los datos y use el botón verde para enviar por WhatsApp o el azul para imprimir/guardar PDF.</p>
+        <p><strong>Pasos:</strong> 1. Llene los datos. 2. Firme. 3. Use el botón verde para generar el PDF y enviarlo por WhatsApp.</p>
     </div>
 
-    <div class="container main-border">
+    <div id="printable-area" class="container main-border">
         <header>
             <img src="divino.PNG" alt="Logo I.E. Divino Niño" class="logo">
             <h1>INSTITUCIÓN EDUCATIVA DIVINO NIÑO</h1>
@@ -47,7 +48,7 @@
                 por la inasistencia a las clases durante los días 
                 <input type="text" id="dias" placeholder="Ej: 26 y 27 de febrero" class="inline-input" required>.
                 Su ausencia se debe a:
-                <textarea id="motivo" rows="3" class="full-textarea" placeholder="Escriba aquí el motivo..." required></textarea>
+                <textarea id="motivo" class="full-textarea dynamic-txt" placeholder="Describa detalladamente el motivo..." required></textarea>
             </div>
 
             <div class="signature-container">
@@ -63,36 +64,33 @@
                 </div>
                 <button type="button" onclick="clearSignature()" class="no-print btn-clear">Limpiar Firma</button>
             </div>
-
-            <div class="button-group no-print">
-                <button type="button" onclick="window.print()" class="btn-print">
-                    <i class="fas fa-print"></i> Imprimir / PDF
-                </button>
-                
-                <button type="button" onclick="enviarWhatsApp()" class="btn-whatsapp">
-                    <i class="fab fa-whatsapp"></i> Enviar a Directora 8A
-                </button>
-            </div>
         </form>
     </div>
 
+    <div class="button-group no-print">
+        <button type="button" onclick="window.print()" class="btn-print">
+            <i class="fas fa-print"></i> Imprimir / Guardar
+        </button>
+        
+        <button type="button" onclick="generarYEnviar()" class="btn-whatsapp">
+            <i class="fab fa-whatsapp"></i> Generar PDF y WhatsApp
+        </button>
+    </div>
+
     <script>
-        // Fecha Real Colombia
+        // Fecha Real
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const now = new Date();
-        document.getElementById('current-date').textContent = now.toLocaleDateString('es-CO', options);
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CO', options);
 
         // Lógica de Firma
         const canvas = document.getElementById('signature-pad');
         const ctx = canvas.getContext('2d');
         let drawing = false;
-
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left,
-                y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top
-            };
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            return { x: clientX - rect.left, y: clientY - rect.top };
         }
         function start(e) { drawing = true; draw(e); }
         function end() { drawing = false; ctx.beginPath(); }
@@ -109,25 +107,27 @@
         canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', end);
         function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        // Función de Envío WhatsApp
-        function enviarWhatsApp() {
-            const docente = document.getElementById('docente').value;
-            const estudiante = document.getElementById('estudiante').value;
-            const grupo = document.getElementById('grupo').value;
-            const dias = document.getElementById('dias').value;
-            const motivo = document.getElementById('motivo').value;
-            const acudiente = document.getElementById('acudiente').value;
-            const fecha = document.getElementById('current-date').textContent;
+        // NUEVA FUNCIÓN: Genera PDF y luego abre WhatsApp
+        function generarYEnviar() {
+            const element = document.getElementById('printable-area');
+            const nombreEstudiante = document.getElementById('estudiante').value || "Excusa";
+            
+            // Configuración del PDF
+            const opt = {
+                margin:       0.5,
+                filename:     `Excusa_${nombreEstudiante}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
 
-            const mensaje = `*EXCUSA ESCOLAR - I.E. DIVINO NIÑO*%0A` +
-                            `*Fecha:* ${fecha}%0A` +
-                            `*Para:* ${docente || 'Directora'}%0A%0A` +
-                            `Cordial saludo. Por medio de la presente solicito excusar a mi hijo(a) *${estudiante}* del grupo *${grupo}*, por la inasistencia los días *${dias}*.%0A%0A` +
-                            `*Motivo:* ${motivo}%0A%0A` +
-                            `Atentamente,%0A*${acudiente}*`;
-
-            const url = `https://wa.me/573145819365?text=${mensaje}`;
-            window.open(url, '_blank');
+            // Ejecutar generación
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Una vez guardado el PDF, abrimos WhatsApp con el mensaje
+                const mensaje = `*EXCUSA ESCOLAR FORMAL*%0AAdjunto envío el documento PDF con la excusa de *${nombreEstudiante}* para su revisión. Muchas gracias.`;
+                const url = `https://wa.me/573145819365?text=${mensaje}`;
+                setTimeout(() => { window.open(url, '_blank'); }, 1500);
+            });
         }
     </script>
 </body>
