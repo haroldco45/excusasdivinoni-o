@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="instructions no-print">
-        <p><strong>Pasos:</strong> 1. Llene los datos. 2. Firme. 3. Use el botón verde para generar el PDF y enviarlo por WhatsApp.</p>
+        <p><strong>Pasos:</strong> 1. Llene los datos. 2. Firme. 3. Use el botón verde para descargar el PDF y enviarlo por WhatsApp.</p>
     </div>
 
     <div id="printable-area" class="container main-border">
@@ -48,44 +48,46 @@
                 por la inasistencia a las clases durante los días 
                 <input type="text" id="dias" placeholder="Ej: 26 y 27 de febrero" class="inline-input" required>.
                 Su ausencia se debe a:
-                <textarea id="motivo" class="full-textarea dynamic-txt" placeholder="Describa detalladamente el motivo..." required></textarea>
+                <textarea id="motivo" class="full-textarea" placeholder="Describa detalladamente el motivo..." required></textarea>
             </div>
 
             <div class="signature-container">
                 <div class="signature-box">
                     <input type="text" id="acudiente" placeholder="Nombre del Padre/Acudiente" class="parent-name-input">
-                    <canvas id="signature-pad" width="300" height="100"></canvas>
-                    <hr>
+                    <div class="canvas-wrap">
+                        <canvas id="signature-pad" width="400" height="120"></canvas>
+                    </div>
+                    <hr class="sig-line">
                     <p>Firma del Padre de familia y/o acudiente</p>
                     <div class="id-phone">
                         <label>CC.</label> <input type="text" id="cc" class="short-input">
                         <label>Tel:</label> <input type="tel" id="tel" class="short-input">
                     </div>
                 </div>
-                <button type="button" onclick="clearSignature()" class="no-print btn-clear">Limpiar Firma</button>
             </div>
         </form>
     </div>
 
     <div class="button-group no-print">
         <button type="button" onclick="window.print()" class="btn-print">
-            <i class="fas fa-print"></i> Imprimir / Guardar
+            <i class="fas fa-print"></i> Solo Imprimir
         </button>
-        
+        <button type="button" onclick="clearSignature()" class="btn-clear">
+            <i class="fas fa-eraser"></i> Limpiar Firma
+        </button>
         <button type="button" onclick="generarYEnviar()" class="btn-whatsapp">
             <i class="fab fa-whatsapp"></i> Generar PDF y WhatsApp
         </button>
     </div>
 
     <script>
-        // Fecha Real
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CO', options);
 
-        // Lógica de Firma
         const canvas = document.getElementById('signature-pad');
         const ctx = canvas.getContext('2d');
         let drawing = false;
+
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
@@ -107,26 +109,27 @@
         canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', end);
         function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        // NUEVA FUNCIÓN: Genera PDF y luego abre WhatsApp
         function generarYEnviar() {
             const element = document.getElementById('printable-area');
-            const nombreEstudiante = document.getElementById('estudiante').value || "Excusa";
+            const nombreEstudiante = document.getElementById('estudiante').value || "Isaac";
             
-            // Configuración del PDF
             const opt = {
-                margin:       0.5,
+                margin:       [0.5, 0.5], // Márgenes para tamaño carta
                 filename:     `Excusa_${nombreEstudiante}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
+                html2canvas:  { 
+                    scale: 3, 
+                    letterRendering: true, 
+                    useCORS: true,
+                    scrollY: 0 // Evita que el PDF salga cortado si hay scroll
+                },
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            // Ejecutar generación
             html2pdf().set(opt).from(element).save().then(() => {
-                // Una vez guardado el PDF, abrimos WhatsApp con el mensaje
-                const mensaje = `*EXCUSA ESCOLAR FORMAL*%0AAdjunto envío el documento PDF con la excusa de *${nombreEstudiante}* para su revisión. Muchas gracias.`;
+                const mensaje = `*EXCUSA ESCOLAR FORMAL*%0AAdjunto envío la excusa en PDF de *${nombreEstudiante}* (8A) para su revisión.`;
                 const url = `https://wa.me/573145819365?text=${mensaje}`;
-                setTimeout(() => { window.open(url, '_blank'); }, 1500);
+                setTimeout(() => { window.open(url, '_blank'); }, 1000);
             });
         }
     </script>
