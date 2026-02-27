@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Excusas - I.E. Divino Niño</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>INSTITUCIÓN EDUCATIVA DIVINO NIÑO</h1>
+            <p>"Fe, Esperanza y Amor"</p>
+            <small>Resolución 18922 de 18-12-2002</small><br>
+            <small>Res. 9430 de 23-11-2004, Res. 0018634 de 12-08-2009</small>
+        </header>
+
+        <section class="date-section">
+            <p>Caucasia, <span id="current-date"></span></p>
+        </section>
+
+        <form id="excuse-form">
+            <div class="recipient">
+                <p>Señor:</p>
+                <input type="text" placeholder="Nombre del Coordinador/Docente" required>
+                <p>Coordinador y/o docente</p>
+                <p>Institución Educativa DIVINO NIÑO</p>
+                <label>SEDE: </label><input type="text" required>
+            </div>
+
+            <p class="greeting">Cordial saludo.</p>
+
+            <div class="body-text">
+                Por medio de la presente, solicito excusar a mi hijo (a) 
+                <input type="text" value="Isaac" required>, 
+                identificado con T.I <input type="text" required> 
+                estudiante del grupo <input type="text" value="8A" required> 
+                por la inasistencia a las clases durante los días 
+                <input type="text" placeholder="Ej: 26 y 27 de febrero" required>.
+                Su ausencia se debe a:
+                <textarea rows="3" required></textarea>
+            </div>
+
+            <div class="signature-section">
+                <hr>
+                <p>Padre de familia y/o acudiente</p>
+                <label>CC.</label> <input type="text" required><br>
+                <label>Teléfono:</label> <input type="tel" required>
+            </div>
+
+            <button type="button" onclick="window.print()" class="no-print">Imprimir / Guardar PDF</button>
+        </form>
+    </div>
+
+    <script>
+        // Configuración de fecha real para Colombia
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const now = new Date();
+        // Forzamos la zona horaria de Colombia
+        const colombiaDate = now.toLocaleDateString('es-CO', options);
+        document.getElementById('current-date').textContent = colombiaDate;
+    </script>
+</body>
+</html>
